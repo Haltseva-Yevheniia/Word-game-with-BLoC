@@ -1,12 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:word_game_bloc/components/position_class.dart';
+import 'package:word_game_bloc/model/position.dart';
 
 part 'game_event.dart';
 part 'game_state.dart';
 
-// BLoC
 class GameBloc extends Bloc<GameEvent, GameState> {
   static const int gridSize = 4;
   final Set<String> validWords = {'VUELTO'};

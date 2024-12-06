@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:word_game_bloc/blocs/game_bloc.dart';
 import 'package:word_game_bloc/components/line_painter.dart';
-import 'package:word_game_bloc/components/position_class.dart';
+import 'package:word_game_bloc/model/position.dart';
 import 'package:word_game_bloc/widgets/letter_cell.dart';
-
-import '../blocs/game_bloc.dart';
 
 const double boxSize = 300.0;
 
