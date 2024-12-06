@@ -6,20 +6,24 @@ import 'package:word_game_bloc/widgets/letter_cell.dart';
 
 import '../blocs/game_bloc.dart';
 
+const double boxSize = 300.0;
+
 class WordGameScreen extends StatelessWidget {
-  const WordGameScreen({Key? key}) : super(key: key);
+  const WordGameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => GameBloc()..add(InitializeGameEvent()),
-      child: const _WordGameView(),
+      child: _WordGameView(),
     );
   }
 }
 
 class _WordGameView extends StatelessWidget {
-  const _WordGameView({Key? key}) : super(key: key);
+  final GlobalKey _gridKey = GlobalKey();
+
+  _WordGameView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,13 +45,14 @@ class _WordGameView extends StatelessWidget {
               const SizedBox(height: 20),
               Center(
                 child: SizedBox(
-                  width: 300,
-                  height: 300,
+                  width: boxSize,
+                  height: boxSize,
                   child: GestureDetector(
                     onPanStart: (details) => _handleDragStart(context, details),
                     onPanUpdate: (details) => _handleDragUpdate(context, details),
                     onPanEnd: (_) => context.read<GameBloc>().add(EndDragEvent()),
                     child: Stack(
+                      key: _gridKey,
                       children: [
                         // Background lines
                         Positioned.fill(
@@ -95,9 +100,12 @@ class _WordGameView extends StatelessWidget {
   }
 
   void _handleDragStart(BuildContext context, DragStartDetails details) {
-    final RenderBox box = context.findRenderObject() as RenderBox;
+    if (_gridKey.currentContext == null || _gridKey.currentContext?.mounted == false) {
+      return;
+    }
+    final RenderBox box = _gridKey.currentContext!.findRenderObject() as RenderBox;
     final localPosition = box.globalToLocal(details.globalPosition);
-    final cellSize = 300 / GameBloc.gridSize;
+    const cellSize = boxSize / GameBloc.gridSize;
     final row = (localPosition.dy / cellSize).floor();
     final col = (localPosition.dx / cellSize).floor();
 
@@ -112,9 +120,12 @@ class _WordGameView extends StatelessWidget {
   }
 
   void _handleDragUpdate(BuildContext context, DragUpdateDetails details) {
-    final RenderBox box = context.findRenderObject() as RenderBox;
+    if (_gridKey.currentContext == null || _gridKey.currentContext?.mounted == false) {
+      return;
+    }
+    final RenderBox box = _gridKey.currentContext!.findRenderObject() as RenderBox;
     final localPosition = box.globalToLocal(details.globalPosition);
-    final cellSize = 300 / GameBloc.gridSize;
+    const cellSize = boxSize / GameBloc.gridSize;
     final row = (localPosition.dy / cellSize).floor();
     final col = (localPosition.dx / cellSize).floor();
 
