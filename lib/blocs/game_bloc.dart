@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:vibration/vibration.dart';
 import 'package:word_game_bloc/model/position.dart';
 
 part 'game_event.dart';
@@ -71,7 +72,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
   }
 
-  void _onEndDrag(EndDragEvent event, Emitter<GameState> emit) {
+  void _onEndDrag(EndDragEvent event, Emitter<GameState> emit) async {
     final bool isCorrect = validWords.contains(state.currentWord);
     emit(state.copyWith(
       currentDragPosition: null,
@@ -79,8 +80,15 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     ));
 
     if (!isCorrect) {
-      add(ResetGameEvent());
+      if (await Vibration.hasVibrator() ?? false) {
+    Vibration.vibrate(duration: 500);
     }
+
+    // Delay before returning to the "incorrect" state to allow shake to complete
+    await Future.delayed(const Duration(milliseconds: 1000));
+      //add(ResetGameEvent());
+    }
+
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {

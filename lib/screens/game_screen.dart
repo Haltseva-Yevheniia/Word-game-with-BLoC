@@ -78,6 +78,7 @@ class _WordGameView extends StatelessWidget {
                             return LetterCell(
                               letter: state.letters[row][col],
                               isSelected: isSelected,
+                              isCorrect: state.isCorrectWord,
                             );
                           },
                         ),

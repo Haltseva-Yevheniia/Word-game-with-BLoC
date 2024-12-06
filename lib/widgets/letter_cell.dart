@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class LetterCell extends StatelessWidget {
   final String letter;
   final bool isSelected;
+  final bool isCorrect;
 
   const LetterCell({
     super.key,
     required this.letter,
     required this.isSelected,
+    required this.isCorrect,
   });
 
   @override
@@ -18,7 +20,7 @@ class LetterCell extends StatelessWidget {
       decoration: BoxDecoration(
         color: isSelected ? Colors.purpleAccent : Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: isSelected ? Colors.purple : Colors.grey),
+        border: Border.all(color: (isSelected && !isCorrect) ? Colors.red : Colors.purple),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
