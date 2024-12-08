@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,9 @@ part 'game_state.dart';
 class GameBloc extends Bloc<GameEvent, GameState> {
   static const int gridSize = 4;
   final Set<String> validWords = {'VUELTO'};
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
 
   GameBloc()
       : super(const GameState(
@@ -85,7 +89,10 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       isCorrectWord: isCorrect,
     ));
 
-    if (!isCorrect && state.currentWord.isNotEmpty) {
+    if (isCorrect) {
+      // Play the audio file
+      await _audioPlayer.play(AssetSource('assets/success_fanfare.mp3'));
+    } else if (state.currentWord.isNotEmpty) {
       emit(state.copyWith(isShaking: true));
 
       if (await Vibration.hasVibrator() ?? false) {
@@ -114,4 +121,11 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       isShaking: false,
     ));
   }
+
+  @override
+  Future<void> close() {
+    _audioPlayer.dispose();
+    return super.close();
+  }
+
 }
