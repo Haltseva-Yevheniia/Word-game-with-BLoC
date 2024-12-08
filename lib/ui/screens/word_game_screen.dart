@@ -3,9 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
-import 'package:word_game_bloc/components/line_painter.dart';
+
 import 'package:word_game_bloc/model/position.dart';
-import 'package:word_game_bloc/widgets/letter_cell.dart';
+import 'package:word_game_bloc/ui/components/line_painter.dart';
+import 'package:word_game_bloc/ui/widgets/letter_cell.dart';
+
 
 const double boxSize = 300.0;
 
