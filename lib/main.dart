@@ -1,6 +1,7 @@
 // lib/blocs/game_bloc.dart
 import 'package:flutter/material.dart';
-import 'package:word_game_bloc/screens/game_screen.dart';
+import 'package:word_game_bloc/screens/word_game_screen.dart';
+//import 'package:word_game_bloc/screens/game_screen.dart';
 //import 'package:audioplayers/audioplayers.dart';
 
 void main() {

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
@@ -14,15 +16,50 @@ class WordGameScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => GameBloc()..add(InitializeGameEvent()),
-      child: _WordGameView(),
+      child: const _WordGameView(),
     );
   }
 }
 
-class _WordGameView extends StatelessWidget {
-  final GlobalKey _gridKey = GlobalKey();
+class _WordGameView extends StatefulWidget {
+  const _WordGameView();
 
-  _WordGameView({super.key});
+  @override
+  State<_WordGameView> createState() => _WordGameViewState();
+}
+
+class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderStateMixin {
+  final GlobalKey _gridKey = GlobalKey();
+  late AnimationController _shakeController;
+  int shakeCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    super.dispose();
+  }
+
+  void startShake(BuildContext context) {
+    _shakeController.forward(from: 0).then((_) {
+      if (shakeCount < 3) {
+        shakeCount++;
+        _shakeController.reverse().then((_) => startShake(context));
+      } else {
+        _shakeController.reset();
+        shakeCount = 0;
+        context.read<GameBloc>().add(StopShakingEvent());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +69,12 @@ class _WordGameView extends StatelessWidget {
         centerTitle: true,
       ),
       backgroundColor: Colors.greenAccent,
-      body: BlocBuilder<GameBloc, GameState>(
+      body: BlocConsumer<GameBloc, GameState>(
+        listener: (context, state) {
+          if (!state.isCorrectWord && state.isShaking) {
+            startShake(context);
+          }
+        },
         builder: (context, state) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -63,22 +105,31 @@ class _WordGameView extends StatelessWidget {
                           ),
                         ),
                         // Grid
-                        GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: GameBloc.gridSize,
-                          ),
-                          itemCount: GameBloc.gridSize * GameBloc.gridSize,
-                          itemBuilder: (context, index) {
-                            final row = index ~/ GameBloc.gridSize;
-                            final col = index % GameBloc.gridSize;
-                            final position = Position(row, col);
-                            final isSelected = state.selectedPositions.contains(position);
+                        AnimatedBuilder(
+                          animation: _shakeController,
+                          builder: (context, child) {
+                            final offset = sin(_shakeController.value * pi) * 10;
+                            return Transform.translate(
+                              offset: Offset(!state.isCorrectWord ? offset : 0, 0),
+                              child: GridView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: GameBloc.gridSize,
+                                ),
+                                itemCount: GameBloc.gridSize * GameBloc.gridSize,
+                                itemBuilder: (context, index) {
+                                  final row = index ~/ GameBloc.gridSize;
+                                  final col = index % GameBloc.gridSize;
+                                  final position = Position(row, col);
+                                  final isSelected = state.selectedPositions.contains(position);
 
-                            return LetterCell(
-                              letter: state.letters[row][col],
-                              isSelected: isSelected,
-                              isCorrect: state.isCorrectWord,
+                                  return LetterCell(
+                                    letter: state.letters[row][col],
+                                    isSelected: isSelected,
+                                    isCorrect: state.isCorrectWord,
+                                  );
+                                },
+                              ),
                             );
                           },
                         ),
@@ -89,8 +140,12 @@ class _WordGameView extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () => context.read<GameBloc>().add(ResetGameEvent()),
-                child: const Text('Reset Grid'),
+                onPressed: () {
+                  _shakeController.reset();
+                  shakeCount = 0;
+                  context.read<GameBloc>().add(ResetGameEvent());
+                },
+                child: const Text('Reset'),
               ),
             ],
           );
@@ -111,11 +166,11 @@ class _WordGameView extends StatelessWidget {
 
     if (row >= 0 && row < GameBloc.gridSize && col >= 0 && col < GameBloc.gridSize) {
       context.read<GameBloc>().add(StartDragEvent(
-            row,
-            col,
-            (col * cellSize) + (cellSize / 2),
-            (row * cellSize) + (cellSize / 2),
-          ));
+        row,
+        col,
+        (col * cellSize) + (cellSize / 2),
+        (row * cellSize) + (cellSize / 2),
+      ));
     }
   }
 
@@ -131,11 +186,11 @@ class _WordGameView extends StatelessWidget {
 
     if (row >= 0 && row < GameBloc.gridSize && col >= 0 && col < GameBloc.gridSize) {
       context.read<GameBloc>().add(UpdateDragEvent(
-            row,
-            col,
-            (col * cellSize) + (cellSize / 2),
-            (row * cellSize) + (cellSize / 2),
-          ));
+        row,
+        col,
+        (col * cellSize) + (cellSize / 2),
+        (row * cellSize) + (cellSize / 2),
+      ));
     }
   }
 }

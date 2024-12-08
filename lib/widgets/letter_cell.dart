@@ -1,4 +1,3 @@
-// lib/widgets/letter_cell.dart
 import 'package:flutter/material.dart';
 
 class LetterCell extends StatelessWidget {
@@ -20,7 +19,7 @@ class LetterCell extends StatelessWidget {
       decoration: BoxDecoration(
         color: isSelected ? Colors.purpleAccent : Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: (isSelected && !isCorrect) ? Colors.red : Colors.purple),
+        border: Border.all(color: (isSelected && !isCorrect) ? Colors.red : Colors.purple, width: isSelected ? 3 : 1),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),

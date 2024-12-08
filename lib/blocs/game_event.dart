@@ -34,4 +34,6 @@ class UpdateDragEvent extends GameEvent {
 
 class EndDragEvent extends GameEvent {}
 
+class StopShakingEvent extends GameEvent {}
+
 class ResetGameEvent extends GameEvent {}

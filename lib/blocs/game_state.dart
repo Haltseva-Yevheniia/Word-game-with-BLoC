@@ -8,6 +8,7 @@ class GameState extends Equatable {
   final String currentWord;
   final Offset? currentDragPosition;
   final bool isCorrectWord;
+  final bool isShaking;
 
   const GameState({
     required this.letters,
@@ -16,6 +17,7 @@ class GameState extends Equatable {
     required this.currentWord,
     this.currentDragPosition,
     this.isCorrectWord = false,
+    this.isShaking = false,
   });
 
   GameState copyWith({
@@ -25,6 +27,7 @@ class GameState extends Equatable {
     String? currentWord,
     Offset? currentDragPosition,
     bool? isCorrectWord,
+    bool? isShaking,
   }) {
     return GameState(
       letters: letters ?? this.letters,
@@ -33,16 +36,11 @@ class GameState extends Equatable {
       currentWord: currentWord ?? this.currentWord,
       currentDragPosition: currentDragPosition,
       isCorrectWord: isCorrectWord ?? this.isCorrectWord,
+      isShaking: isShaking ?? this.isShaking,
     );
   }
 
   @override
-  List<Object?> get props => [
-        letters,
-        selectedPositions,
-        selectedPoints,
-        currentWord,
-        currentDragPosition,
-        isCorrectWord,
-      ];
+  List<Object?> get props =>
+      [letters, selectedPositions, selectedPoints, currentWord, currentDragPosition, isCorrectWord, isShaking];
 }
