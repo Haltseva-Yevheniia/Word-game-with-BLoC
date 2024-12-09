@@ -1,9 +1,9 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:word_game_bloc/model/position.dart';
+import 'package:word_game_bloc/services/audio_service.dart';
 
 part 'game_event.dart';
 part 'game_state.dart';
@@ -12,7 +12,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   static const int gridSize = 4;
   final String validWord = 'VUELTO';
 
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioService _audioService = AudioService();
 
   GameBloc()
       : super(const GameState(
@@ -107,7 +107,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     ));
 
     if (isCorrect) {
-      await _audioPlayer.play(AssetSource('success_fanfare.mp3'));
+      await _audioService.playSuccessSound();
     } else if (state.currentWord.isNotEmpty) {
       emit(state.copyWith(isShaking: true));
 
@@ -122,7 +122,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   void _onStopShaking(StopShakingEvent event, Emitter<GameState> emit) {
     emit(state.copyWith(isShaking: false));
-    //add(ResetGameEvent());
+    add(ResetGameEvent());
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {
@@ -138,7 +138,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   @override
   Future<void> close() {
-    _audioPlayer.dispose();
+    _audioService.dispose();
     return super.close();
   }
 }

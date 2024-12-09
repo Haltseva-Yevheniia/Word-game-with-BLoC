@@ -31,7 +31,10 @@ lib/
 │   ├── game_bloc.dart
 │   ├── game_event.dart
 │   └── game_state.dart
-├── models/         # Data models
+├── model/         # Data models
+│   ├── position.dart
+├── services/       # game services
+│   ├── audio_service.dart
 ├── ui/             # UI screens
 │   ├── components/
 │   │   ├── line_painter.dart
@@ -39,6 +42,7 @@ lib/
 │   │    ├── word_game_screen.dart
 │   ├── widgets/
 │   │    ├── letter_cell.dart
+
 
 ```
 
