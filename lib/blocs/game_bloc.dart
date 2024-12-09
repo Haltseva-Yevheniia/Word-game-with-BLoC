@@ -90,8 +90,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     ));
 
     if (isCorrect) {
-      // Play the audio file
-      await _audioPlayer.play(AssetSource('assets/success_fanfare.mp3'));
+      await _audioPlayer.play(AssetSource('success_fanfare.mp3'));
     } else if (state.currentWord.isNotEmpty) {
       emit(state.copyWith(isShaking: true));
 
