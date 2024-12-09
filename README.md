@@ -12,16 +12,8 @@ correct ones!
 - Real-time word validation
 - Haptic feedback (vibration and shake) for incorrect words
 - Sound effects for correct word matches
-- Clean architecture with BLoC pattern
+- App architecture based on BLoC pattern
 
-## Dependencies
-
-dependencies:
-flutter:
-sdk: flutter
-flutter_bloc: ^8.1.6 # State management
-vibration: ^2.0.1 # Haptic feedback
-audioplayers: ^6.0.0 # Sound effects
 
 ## Project Structure
 
