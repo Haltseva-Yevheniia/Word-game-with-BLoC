@@ -14,7 +14,6 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   final AudioPlayer _audioPlayer = AudioPlayer();
 
-
   GameBloc()
       : super(const GameState(
           letters: [
@@ -62,11 +61,29 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     ));
   }
 
-
   void _onUpdateDrag(UpdateDragEvent event, Emitter<GameState> emit) {
     final Position position = Position(event.row, event.col);
-    if (event.row < 0 || event.col < 0 || event.row >= gridSize || event.col >= gridSize || state.selectedPositions.contains(position)) {
+    if (event.row < 0 ||
+        event.col < 0 ||
+        event.row >= gridSize ||
+        event.col >= gridSize ||
+        state.selectedPositions.contains(position)) {
       return;
+    }
+
+    if (state.selectedPositions.isNotEmpty) {
+      final Position lastPosition = state.selectedPositions.last;
+
+      final int rowDiff = (event.row - lastPosition.row).abs();
+      final int colDiff = (event.col - lastPosition.col).abs();
+
+      if (rowDiff > 0 && colDiff > 0) {
+        return;
+      }
+
+      if (rowDiff > 1 || colDiff > 1) {
+        return;
+      }
     }
 
     final List<Position> newPositions = [...state.selectedPositions, position];
@@ -82,7 +99,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   }
 
   void _onEndDrag(EndDragEvent event, Emitter<GameState> emit) async {
-    final bool isCorrect = validWord==(state.currentWord);
+    final bool isCorrect = validWord == (state.currentWord);
 
     emit(state.copyWith(
       currentDragPosition: null,
@@ -103,11 +120,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
   }
 
-
-
   void _onStopShaking(StopShakingEvent event, Emitter<GameState> emit) {
     emit(state.copyWith(isShaking: false));
-    add(ResetGameEvent());
+    //add(ResetGameEvent());
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {
@@ -126,5 +141,4 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     _audioPlayer.dispose();
     return super.close();
   }
-
 }
