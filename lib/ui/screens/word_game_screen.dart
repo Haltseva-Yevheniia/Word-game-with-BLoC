@@ -3,13 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
-
 import 'package:word_game_bloc/model/position.dart';
 import 'package:word_game_bloc/ui/components/line_painter.dart';
 import 'package:word_game_bloc/ui/widgets/letter_cell.dart';
 
 
 const double boxSize = 300.0;
+
+typedef DragEventCreator = GameEvent Function(int row, int col, double dx, double dy);
 
 class WordGameScreen extends StatelessWidget {
   const WordGameScreen({super.key});
@@ -156,19 +157,20 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
     );
   }
 
-  void _handleDragStart(BuildContext context, DragStartDetails details) {
+  void _handleDrag(BuildContext context, Offset globalPosition, DragEventCreator createEvent) {
     if (_gridKey.currentContext == null || _gridKey.currentContext?.mounted == false) {
       return;
     }
+
     final RenderBox box = _gridKey.currentContext!.findRenderObject() as RenderBox;
-    final localPosition = box.globalToLocal(details.globalPosition);
+    final localPosition = box.globalToLocal(globalPosition);
     const cellSize = boxSize / GameBloc.gridSize;
     final row = (localPosition.dy / cellSize).floor();
     final col = (localPosition.dx / cellSize).floor();
 
     if (row >= 0 && row < GameBloc.gridSize && col >= 0 && col < GameBloc.gridSize) {
-      context.read<GameBloc>().add(StartDragEvent(
-        row,
+      context.read<GameBloc>().add(createEvent(
+            row,
         col,
         (col * cellSize) + (cellSize / 2),
         (row * cellSize) + (cellSize / 2),
@@ -176,23 +178,19 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
     }
   }
 
-  void _handleDragUpdate(BuildContext context, DragUpdateDetails details) {
-    if (_gridKey.currentContext == null || _gridKey.currentContext?.mounted == false) {
-      return;
-    }
-    final RenderBox box = _gridKey.currentContext!.findRenderObject() as RenderBox;
-    final localPosition = box.globalToLocal(details.globalPosition);
-    const cellSize = boxSize / GameBloc.gridSize;
-    final row = (localPosition.dy / cellSize).floor();
-    final col = (localPosition.dx / cellSize).floor();
+  void _handleDragStart(BuildContext context, DragStartDetails details) {
+    _handleDrag(
+      context,
+      details.globalPosition,
+      (row, col, dx, dy) => StartDragEvent(row, col, dx, dy),
+    );
+  }
 
-    if (row >= 0 && row < GameBloc.gridSize && col >= 0 && col < GameBloc.gridSize) {
-      context.read<GameBloc>().add(UpdateDragEvent(
-        row,
-        col,
-        (col * cellSize) + (cellSize / 2),
-        (row * cellSize) + (cellSize / 2),
-      ));
-    }
+  void _handleDragUpdate(BuildContext context, DragUpdateDetails details) {
+    _handleDrag(
+      context,
+      details.globalPosition,
+      (row, col, dx, dy) => UpdateDragEvent(row, col, dx, dy),
+    );
   }
 }
