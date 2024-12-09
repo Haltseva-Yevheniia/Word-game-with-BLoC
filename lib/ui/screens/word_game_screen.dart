@@ -82,9 +82,8 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
             children: [
               Text(
                 'Current Word: ${state.currentWord}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
-                  color: state.isCorrectWord ? Colors.green : Colors.black,
                 ),
               ),
               if (state.isCorrectWord)
