@@ -82,17 +82,15 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
             children: [
               Text(
                 'Current Word: ${state.currentWord}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
+                  color: state.isCorrectWord ? Colors.purple : Colors.black,
                 ),
               ),
               if (state.isCorrectWord)
-                const Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text(
-                    youAreRight,
-                    style: TextStyle(fontSize: 20),
-                  ),
+                const Text(
+                  youAreRight,
+                  style: TextStyle(fontSize: 20),
                 ),
               const SizedBox(height: 20),
               Center(
@@ -156,7 +154,7 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
                   shakeCount = 0;
                   context.read<GameBloc>().add(ResetGameEvent());
                 },
-                child: const Text('Reset'),
+                child: const Text(reset),
               ),
             ],
           );

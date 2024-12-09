@@ -82,7 +82,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   }
 
   void _onEndDrag(EndDragEvent event, Emitter<GameState> emit) async {
-    final bool isCorrect = validWord.contains(state.currentWord);
+    final bool isCorrect = validWord==(state.currentWord);
 
     emit(state.copyWith(
       currentDragPosition: null,
@@ -99,7 +99,6 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       }
 
       await Future.delayed(const Duration(milliseconds: 500));
-
       add(StopShakingEvent());
     }
   }
@@ -108,6 +107,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   void _onStopShaking(StopShakingEvent event, Emitter<GameState> emit) {
     emit(state.copyWith(isShaking: false));
+    add(ResetGameEvent());
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {
