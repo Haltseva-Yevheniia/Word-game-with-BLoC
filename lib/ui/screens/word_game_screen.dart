@@ -101,26 +101,25 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
                     onPanStart: (details) => _handleDragStart(context, details),
                     onPanUpdate: (details) => _handleDragUpdate(context, details),
                     onPanEnd: (_) => context.read<GameBloc>().add(EndDragEvent()),
-                    child: Stack(
-                      key: _gridKey,
-                      children: [
-                        // Background lines
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: LinePainter(
-                              points: state.selectedPoints,
-                              currentDragPosition: state.currentDragPosition,
-                            ),
-                          ),
-                        ),
-                        // Grid
-                        AnimatedBuilder(
-                          animation: _shakeController,
-                          builder: (context, child) {
-                            final offset = sin(_shakeController.value * pi) * 10;
-                            return Transform.translate(
-                              offset: Offset(!state.isCorrectWord ? offset : 0, 0),
-                              child: GridView.builder(
+                    child: AnimatedBuilder(
+                      animation: _shakeController,
+                      builder: (context, child) {
+                        final offset = sin(_shakeController.value * pi) * 10;
+                        return Transform.translate(
+                          offset: Offset(!state.isCorrectWord ? offset : 0, 0),
+                          child: Stack(
+                            key: _gridKey,
+                            children: [
+                              // Background lines
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: LinePainter(
+                                    points: state.selectedPoints,
+                                    currentDragPosition: state.currentDragPosition,
+                                  ),
+                                ),
+                              ),
+                              GridView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
                                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: GameBloc.gridSize,
@@ -139,10 +138,10 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
                                   );
                                 },
                               ),
-                            );
-                          },
-                        ),
-                      ],
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

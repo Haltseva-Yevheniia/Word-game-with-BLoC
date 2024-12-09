@@ -1,6 +1,4 @@
-
-
-///word_game_screen
+///Constants for word_game_screen
 // sizes
 const double boxSize = 300.0;
 
