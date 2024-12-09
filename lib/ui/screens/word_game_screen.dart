@@ -3,12 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
+import 'package:word_game_bloc/constants.dart';
 import 'package:word_game_bloc/model/position.dart';
 import 'package:word_game_bloc/ui/components/line_painter.dart';
 import 'package:word_game_bloc/ui/widgets/letter_cell.dart';
-
-
-const double boxSize = 300.0;
 
 typedef DragEventCreator = GameEvent Function(int row, int col, double dx, double dy);
 
@@ -68,7 +66,7 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Word Game'),
+        title: const Text(appTitle),
         centerTitle: true,
       ),
       backgroundColor: Colors.greenAccent,
@@ -84,8 +82,19 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
             children: [
               Text(
                 'Current Word: ${state.currentWord}',
-                style: const TextStyle(fontSize: 24),
+                style: TextStyle(
+                  fontSize: 24,
+                  color: state.isCorrectWord ? Colors.green : Colors.black,
+                ),
               ),
+              if (state.isCorrectWord)
+                const Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text(
+                    youAreRight,
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
               const SizedBox(height: 20),
               Center(
                 child: SizedBox(
@@ -171,10 +180,10 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
     if (row >= 0 && row < GameBloc.gridSize && col >= 0 && col < GameBloc.gridSize) {
       context.read<GameBloc>().add(createEvent(
             row,
-        col,
-        (col * cellSize) + (cellSize / 2),
-        (row * cellSize) + (cellSize / 2),
-      ));
+            col,
+            (col * cellSize) + (cellSize / 2),
+            (row * cellSize) + (cellSize / 2),
+          ));
     }
   }
 

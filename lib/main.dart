@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:word_game_bloc/constants.dart';
 import 'package:word_game_bloc/ui/screens/word_game_screen.dart';
 
 void main() {
@@ -11,7 +12,7 @@ class WordGameApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Word Game',
+      title: appTitle,
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const WordGameScreen(),
     );

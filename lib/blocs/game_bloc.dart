@@ -10,7 +10,7 @@ part 'game_state.dart';
 
 class GameBloc extends Bloc<GameEvent, GameState> {
   static const int gridSize = 4;
-  final Set<String> validWords = {'VUELTO'};
+  final String validWord = 'VUELTO';
 
   final AudioPlayer _audioPlayer = AudioPlayer();
 
@@ -82,7 +82,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   }
 
   void _onEndDrag(EndDragEvent event, Emitter<GameState> emit) async {
-    final bool isCorrect = validWords.contains(state.currentWord);
+    final bool isCorrect = validWord.contains(state.currentWord);
 
     emit(state.copyWith(
       currentDragPosition: null,
