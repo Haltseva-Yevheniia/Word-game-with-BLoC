@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:word_game_bloc/model/position.dart';
@@ -12,17 +11,16 @@ class WordPlacement {
   WordPlacement(this.word, this.gridSize) {
     grid = List.generate(
       gridSize,
-          (_) => List.generate(gridSize, (_) => ''),
+      (_) => List.generate(gridSize, (_) => ''),
     );
   }
 
   bool isValidPlacement() {
-    return word.length <= gridSize * gridSize && word.length <= gridSize * 2 - 1;
+    return word.length <= gridSize * gridSize;
   }
 
   List<Position> findValidPath() {
     for (int attempt = 0; attempt < 100; attempt++) {
-
       int startRow = random.nextInt(gridSize);
       int startCol = random.nextInt(gridSize);
 
@@ -48,10 +46,10 @@ class WordPlacement {
     }
 
     final List<Position> directions = [
-      Position(-1, 0),  // up
-      Position(1, 0),   // down
-      Position(0, -1),  // left
-      Position(0, 1),   // right
+      Position(-1, 0), // up
+      Position(1, 0), // down
+      Position(0, -1), // left
+      Position(0, 1), // right
     ];
 
     directions.shuffle(random);
@@ -123,10 +121,10 @@ class WordPlacement {
   List<String> _getAdjacentLetters(Position pos) {
     List<String> adjacent = [];
     final List<Position> directions = [
-      Position(-1, 0),  // up
-      Position(1, 0),   // down
-      Position(0, -1),  // left
-      Position(0, 1),   // right
+      Position(-1, 0), // up
+      Position(1, 0), // down
+      Position(0, -1), // left
+      Position(0, 1), // right
     ];
 
     for (Position direction in directions) {

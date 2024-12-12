@@ -1,14 +1,16 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
 import 'package:word_game_bloc/model/position.dart';
+import 'package:word_game_bloc/model/word_placement.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('GameBloc', () {
     late GameBloc gameBloc;
 
     setUp(() {
-      gameBloc = GameBloc(validWord: 'word', gridSize: 4);
+      gameBloc = GameBloc(validWord: 'VUELTO', gridSize: 4);
     });
 
     test('initial state is correct', () {
@@ -35,13 +37,16 @@ void main() {
       'emits new state on StartDragEvent',
       build: () => gameBloc,
       act: (bloc) => bloc.add(StartDragEvent(0, 0, 150.0, 150.0)),
-      expect: () => [
-        isA<GameState>()
-            .having((state) => state.selectedPositions.length, 'positions length', 1)
-            .having((state) => state.selectedPositions.first, 'first position', Position(0, 0))
-            .having((state) => state.currentWord, 'currentWord', 'A')
-            .having((state) => state.currentDragPosition, 'dragPosition', const Offset(150.0, 150.0))
-      ],
+      expect: () {
+        final letter = gameBloc.state.letters[0][0];
+        return [
+          isA<GameState>()
+              .having((state) => state.selectedPositions.length, 'positions length', 1)
+              .having((state) => state.selectedPositions.first, 'first position', Position(0, 0))
+              .having((state) => state.currentWord, 'currentWord', letter)
+              .having((state) => state.currentDragPosition, 'dragPosition', const Offset(150.0, 150.0))
+        ];
+      },
     );
 
     blocTest<GameBloc, GameState>(
@@ -51,40 +56,33 @@ void main() {
         letters: gameBloc.state.letters,
         selectedPositions: [Position(0, 0)],
         selectedPoints: const [Offset(150.0, 150.0)],
-        currentWord: 'A',
+        currentWord: gameBloc.state.letters[0][0],
         currentDragPosition: const Offset(150.0, 150.0),
       ),
       act: (bloc) => bloc.add(UpdateDragEvent(0, 1, 200.0, 150.0)),
-      expect: () => [
-        isA<GameState>()
-            .having((state) => state.selectedPositions.length, 'positions length', 2)
-            .having((state) => state.currentWord, 'currentWord', 'AK')
-      ],
+      expect: () {
+        final word = '${gameBloc.state.letters[0][0]}${gameBloc.state.letters[0][1]}';
+        return [
+          isA<GameState>()
+              .having((state) => state.selectedPositions.length, 'positions length', 2)
+              .having((state) => state.currentWord, 'currentWord', word)
+        ];
+      },
     );
 
     blocTest<GameBloc, GameState>(
       'emits correct state on EndDragEvent with valid word',
       build: () => gameBloc,
-      seed: () => GameState(
-        letters: gameBloc.state.letters,
-        selectedPositions: [
-          Position(0, 2),
-          Position(1, 2),
-          Position(2, 2),
-          Position(2, 1),
-          Position(1, 1),
-          Position(0, 2),
-        ],
-        selectedPoints: const [
-          Offset(150.0, 150.0),
-          Offset(200.0, 150.0),
-          Offset(250.0, 150.0),
-          Offset(250.0, 200.0),
-          Offset(200.0, 200.0),
-          Offset(150.0, 200.0),
-        ],
-        currentWord: 'VUELTO',
-      ),
+      seed: () {
+        final wordPlacement = WordPlacement('VUELTO', 4);
+        final positions = wordPlacement.findValidPath();
+        return GameState(
+          letters: wordPlacement.generateGrid(),
+          selectedPositions: positions,
+          selectedPoints: positions.map((pos) => Offset(pos.col.toDouble() * 50, pos.row.toDouble() * 50)).toList(),
+          currentWord: 'VUELTO',
+        );
+      },
       act: (bloc) => bloc.add(EndDragEvent()),
       expect: () => [
         isA<GameState>()
@@ -100,7 +98,7 @@ void main() {
         letters: gameBloc.state.letters,
         selectedPositions: [Position(0, 0), Position(0, 1)],
         selectedPoints: const [Offset(150.0, 150.0), Offset(200.0, 150.0)],
-        currentWord: 'AK',
+        currentWord: 'XX',
       ),
       act: (bloc) => bloc.add(EndDragEvent()),
       expect: () => [
@@ -113,13 +111,16 @@ void main() {
     blocTest<GameBloc, GameState>(
       'emits reset state on ResetGameEvent',
       build: () => gameBloc,
-      seed: () => GameState(
-        letters: gameBloc.state.letters,
-        selectedPositions: [Position(0, 0)],
-        selectedPoints: const [Offset(150.0, 150.0)],
-        currentWord: 'A',
-        isCorrectWord: true,
-      ),
+      seed: () {
+        final wordPlacement = WordPlacement('VUELTO', 4);
+        return GameState(
+          letters: wordPlacement.generateGrid(),
+          selectedPositions: [Position(0, 0)],
+          selectedPoints: const [Offset(150.0, 150.0)],
+          currentWord: 'A',
+          isCorrectWord: true,
+        );
+      },
       act: (bloc) => bloc.add(ResetGameEvent()),
       expect: () => [
         isA<GameState>()
