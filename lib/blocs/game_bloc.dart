@@ -123,7 +123,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   void _onStopShaking(StopShakingEvent event, Emitter<GameState> emit) {
     emit(state.copyWith(isShaking: false));
-    add(ResetGameEvent());
+    add(InitializeGameEvent());
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {
