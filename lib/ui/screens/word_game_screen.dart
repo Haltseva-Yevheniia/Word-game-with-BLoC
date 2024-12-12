@@ -11,19 +11,31 @@ import 'package:word_game_bloc/ui/widgets/letter_cell.dart';
 typedef DragEventCreator = GameEvent Function(int row, int col, double dx, double dy);
 
 class WordGameScreen extends StatelessWidget {
-  const WordGameScreen({super.key});
+  final String word;
+  final int gridSize;
+
+  const WordGameScreen({
+    super.key,
+    required this.word,
+    required this.gridSize,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => GameBloc()..add(InitializeGameEvent()),
-      child: const _WordGameView(),
+      create: (context) => GameBloc(
+        validWord: word,
+        gridSize: gridSize,
+      )..add(InitializeGameEvent()),
+      child: _WordGameView(gridSize: gridSize),
     );
   }
 }
 
 class _WordGameView extends StatefulWidget {
-  const _WordGameView();
+  final int gridSize;
+
+  const _WordGameView({required this.gridSize});
 
   @override
   State<_WordGameView> createState() => _WordGameViewState();
@@ -121,16 +133,15 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
                               ),
                               GridView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: GameBloc.gridSize,
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: widget.gridSize,
                                 ),
-                                itemCount: GameBloc.gridSize * GameBloc.gridSize,
+                                itemCount: widget.gridSize * widget.gridSize,
                                 itemBuilder: (context, index) {
-                                  final row = index ~/ GameBloc.gridSize;
-                                  final col = index % GameBloc.gridSize;
+                                  final row = index ~/ widget.gridSize;
+                                  final col = index % widget.gridSize;
                                   final position = Position(row, col);
                                   final isSelected = state.selectedPositions.contains(position);
-
                                   return LetterCell(
                                     letter: state.letters[row][col],
                                     isSelected: isSelected,
@@ -166,14 +177,14 @@ class _WordGameViewState extends State<_WordGameView> with SingleTickerProviderS
     if (_gridKey.currentContext == null || _gridKey.currentContext?.mounted == false) {
       return;
     }
-
     final RenderBox box = _gridKey.currentContext!.findRenderObject() as RenderBox;
     final localPosition = box.globalToLocal(globalPosition);
-    const cellSize = boxSize / GameBloc.gridSize;
+    final cellSize = boxSize / widget.gridSize;
+
     final row = (localPosition.dy / cellSize).floor();
     final col = (localPosition.dx / cellSize).floor();
 
-    if (row >= 0 && row < GameBloc.gridSize && col >= 0 && col < GameBloc.gridSize) {
+    if (row >= 0 && row < widget.gridSize && col >= 0 && col < widget.gridSize) {
       context.read<GameBloc>().add(createEvent(
             row,
             col,

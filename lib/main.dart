@@ -14,7 +14,10 @@ class WordGameApp extends StatelessWidget {
     return MaterialApp(
       title: appTitle,
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const WordGameScreen(),
+      home: const WordGameScreen(
+        word: 'VUELTO',
+        gridSize: 4,
+      ),
     );
   }
 }

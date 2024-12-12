@@ -8,7 +8,7 @@ void main() {
     late GameBloc gameBloc;
 
     setUp(() {
-      gameBloc = GameBloc();
+      gameBloc = GameBloc(validWord: 'word', gridSize: 4);
     });
 
     test('initial state is correct', () {
