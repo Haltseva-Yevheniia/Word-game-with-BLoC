@@ -2,7 +2,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
 import 'package:word_game_bloc/model/position.dart';
-import 'package:word_game_bloc/model/word_placement.dart';
+import 'package:word_game_bloc/services/word_placer.dart';
+
+import 'mock_audio_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +12,12 @@ void main() {
     late GameBloc gameBloc;
 
     setUp(() {
-      gameBloc = GameBloc(validWord: 'VUELTO', gridSize: 4);
+      final mockAudioService = MockAudioService();
+      gameBloc = GameBloc(
+        validWord: 'VUELTO',
+        gridSize: 4,
+        audioService: mockAudioService,
+      );
     });
 
     test('initial state is correct', () {
@@ -74,7 +81,7 @@ void main() {
       'emits correct state on EndDragEvent with valid word',
       build: () => gameBloc,
       seed: () {
-        final wordPlacement = WordPlacement('VUELTO', 4);
+        final wordPlacement = WordPlacer('VUELTO', 4);
         final positions = wordPlacement.findValidPath();
         return GameState(
           letters: wordPlacement.generateGrid(),
@@ -112,7 +119,7 @@ void main() {
       'emits reset state on ResetGameEvent',
       build: () => gameBloc,
       seed: () {
-        final wordPlacement = WordPlacement('VUELTO', 4);
+        final wordPlacement = WordPlacer('VUELTO', 4);
         return GameState(
           letters: wordPlacement.generateGrid(),
           selectedPositions: [Position(0, 0)],

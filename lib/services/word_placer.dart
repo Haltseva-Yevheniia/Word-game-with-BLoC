@@ -1,14 +1,15 @@
 import 'dart:math';
 
+import 'package:word_game_bloc/constants.dart';
 import 'package:word_game_bloc/model/position.dart';
 
-class WordPlacement {
+class WordPlacer {
   final String word;
   final int gridSize;
   late List<List<String>> grid;
   final random = Random();
 
-  WordPlacement(this.word, this.gridSize) {
+  WordPlacer(this.word, this.gridSize) {
     grid = List.generate(
       gridSize,
       (_) => List.generate(gridSize, (_) => ''),
@@ -20,7 +21,7 @@ class WordPlacement {
   }
 
   List<Position> findValidPath() {
-    for (int attempt = 0; attempt < 100; attempt++) {
+    for (int attempt = 0; attempt < maxAllowedAttemptsToFindValidPath; attempt++) {
       int startRow = random.nextInt(gridSize);
       int startCol = random.nextInt(gridSize);
 

@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:word_game_bloc/model/position.dart';
-import 'package:word_game_bloc/model/word_placement.dart';
+import 'package:word_game_bloc/services/word_placer.dart';
 import 'package:word_game_bloc/services/audio_service.dart';
 
 part 'game_event.dart';
@@ -12,15 +12,17 @@ part 'game_state.dart';
 class GameBloc extends Bloc<GameEvent, GameState> {
   final int gridSize;
   final String validWord;
-  final AudioService _audioService = AudioService();
+  final AudioService _audioService;
 
   GameBloc({
     required this.validWord,
     required this.gridSize,
-  }) : super(GameState(
-          letters: WordPlacement(validWord.toUpperCase(), gridSize).generateGrid(),
-          selectedPositions: [],
-          selectedPoints: [],
+    AudioService? audioService,
+  })  : _audioService = audioService ?? AudioService(),
+        super(GameState(
+          letters: WordPlacer(validWord.toUpperCase(), gridSize).generateGrid(),
+          selectedPositions: const [],
+          selectedPoints: const [],
           currentWord: '',
         )) {
     on<InitializeGameEvent>(_onInitializeGame);
@@ -65,7 +67,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     final List<Position> newPositions = [...state.selectedPositions, newPosition];
 
-    if (!WordPlacement(validWord, gridSize).arePositionsConnected(newPositions)) {
+    if (!WordPlacer(validWord, gridSize).arePositionsConnected(newPositions)) {
       return;
     }
 
@@ -127,7 +129,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {
-    final wordPlacement = WordPlacement(validWord.toUpperCase(), gridSize);
+    final wordPlacement = WordPlacer(validWord.toUpperCase(), gridSize);
     final newGrid = wordPlacement.generateGrid();
     emit(state.copyWith(
       letters: newGrid,
