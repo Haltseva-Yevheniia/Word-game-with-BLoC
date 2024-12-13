@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: "3.24.5"
+  FLUTTER_VERSION: "3.27.0"
 
 jobs:
   build:
@@ -27,6 +27,8 @@ jobs:
           cache: true
       - name: Get dependencies
         run: flutter pub get
+      - name: Build runner
+        run: dart run build_runner build --delete-conflicting-outputs
       - name: Build apk
         run: flutter build apk --debug
 
@@ -48,5 +50,7 @@ jobs:
           cache: true
       - name: Get dependencies
         run: flutter pub get
+      - name: Build runner
+        run: dart run build_runner build --delete-conflicting-outputs
       - name: Run all tests
         run: flutter test

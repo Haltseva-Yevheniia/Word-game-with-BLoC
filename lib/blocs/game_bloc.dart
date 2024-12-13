@@ -4,26 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:word_game_bloc/model/position.dart';
 import 'package:word_game_bloc/services/audio_service.dart';
+import 'package:word_game_bloc/services/word_placer.dart';
 
 part 'game_event.dart';
 part 'game_state.dart';
 
 class GameBloc extends Bloc<GameEvent, GameState> {
-  static const int gridSize = 4;
-  final String validWord = 'VUELTO';
+  final int gridSize;
+  final String validWord;
+  final WordPlacer wordPlacer;
+  final AudioService _audioService;
 
-  final AudioService _audioService = AudioService();
-
-  GameBloc()
-      : super(const GameState(
-          letters: [
-            ['A', 'K', 'O', 'E'],
-            ['O', 'L', 'T', 'M'],
-            ['R', 'E', 'U', 'P'],
-            ['P', 'I', 'V', 'E'],
-          ],
-          selectedPositions: [],
-          selectedPoints: [],
+  GameBloc({
+    required String validWord,
+    required this.gridSize,
+    required this.wordPlacer,
+    AudioService? audioService,
+  })  : validWord = validWord.toUpperCase(),
+        _audioService = audioService ?? AudioService(),
+        super(GameState(
+          letters: wordPlacer.getGrid(),
+          selectedPositions: const [],
+          selectedPoints: const [],
           currentWord: '',
         )) {
     on<InitializeGameEvent>(_onInitializeGame);
@@ -50,9 +52,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     if (event.row < 0 || event.col < 0 || event.row >= gridSize || event.col >= gridSize) {
       return;
     }
-
     final Offset point = Offset(event.dx, event.dy);
-
     emit(state.copyWith(
       selectedPositions: [position],
       selectedPoints: [point],
@@ -62,12 +62,15 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   }
 
   void _onUpdateDrag(UpdateDragEvent event, Emitter<GameState> emit) {
-    final Position position = Position(event.row, event.col);
-    if (event.row < 0 ||
-        event.col < 0 ||
-        event.row >= gridSize ||
-        event.col >= gridSize ||
-        state.selectedPositions.contains(position)) {
+    final Position newPosition = Position(event.row, event.col);
+
+    if (!_isValidPosition(newPosition) || state.selectedPositions.contains(newPosition)) {
+      return;
+    }
+
+    final List<Position> newPositions = [...state.selectedPositions, newPosition];
+
+    if (!wordPlacer.arePositionsConnected(newPositions)) {
       return;
     }
 
@@ -86,7 +89,6 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       }
     }
 
-    final List<Position> newPositions = [...state.selectedPositions, position];
     final List<Offset> newPoints = [...state.selectedPoints, Offset(event.dx, event.dy)];
     final String newWord = state.currentWord + state.letters[event.row][event.col];
 
@@ -98,8 +100,12 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     ));
   }
 
+  bool _isValidPosition(Position pos) {
+    return pos.row >= 0 && pos.row < gridSize && pos.col >= 0 && pos.col < gridSize;
+  }
+
   void _onEndDrag(EndDragEvent event, Emitter<GameState> emit) async {
-    final bool isCorrect = validWord == (state.currentWord);
+    final bool isCorrect = validWord == state.currentWord;
 
     emit(state.copyWith(
       currentDragPosition: null,
@@ -122,11 +128,13 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   void _onStopShaking(StopShakingEvent event, Emitter<GameState> emit) {
     emit(state.copyWith(isShaking: false));
-    add(ResetGameEvent());
+    add(InitializeGameEvent());
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {
+    final newGrid = wordPlacer.reset();
     emit(state.copyWith(
+      letters: newGrid,
       selectedPositions: [],
       selectedPoints: [],
       currentWord: '',

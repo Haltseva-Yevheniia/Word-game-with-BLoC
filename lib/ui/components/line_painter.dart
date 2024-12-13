@@ -11,7 +11,7 @@ class LinePainter extends CustomPainter {
     if (points.isEmpty) return;
 
     final paint = Paint()
-      ..color = Colors.purple.withOpacity(0.6)
+      ..color = Colors.purple.withValues(alpha: 0.6)
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
