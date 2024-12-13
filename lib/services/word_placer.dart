@@ -2,6 +2,13 @@ import 'dart:math';
 
 import 'package:word_game_bloc/model/position.dart';
 
+const List<Position> directions = [
+  Position(-1, 0), // up
+  Position(1, 0), // down
+  Position(0, -1), // left
+  Position(0, 1), // right
+];
+
 class WordPlacer {
   final String targetWord;
   final int gridSize;
@@ -43,10 +50,17 @@ class WordPlacer {
       List<Position> path = [];
       Set<Position> visitedPositions = {};
 
+      // Create a temporary grid for testing letter placement
+      List<List<String>> tempGrid = List.generate(
+        gridSize,
+        (_) => List.generate(gridSize, (_) => ''),
+      );
+
       path.add(startPos);
       visitedPositions.add(startPos);
+      tempGrid[startPos.row][startPos.col] = targetWord[0];
 
-      if (_buildPathFromPosition(path, visitedPositions, 1)) {
+      if (_buildPathFromPosition(path, visitedPositions, tempGrid, 1)) {
         return path;
       }
     }
@@ -54,44 +68,69 @@ class WordPlacer {
     throw Exception('Could not find valid path for word placement');
   }
 
-  bool _buildPathFromPosition(List<Position> path, Set<Position> visitedPositions, int currentIndex) {
+  /// Recursively builds a valid path for word placement by trying each direction from current position
+  /// @return true if successful path is found. False otherwise
+  bool _buildPathFromPosition(
+    List<Position> path,
+    Set<Position> visitedPositions,
+    List<List<String>> tempGrid,
+    int currentIndex,
+  ) {
     if (currentIndex >= targetWord.length) {
       return true;
     }
 
-    final List<Position> directions = [
-      Position(-1, 0), // up
-      Position(1, 0), // down
-      Position(0, -1), // left
-      Position(0, 1), // right
-    ];
-
-    directions.shuffle(random);
+    final List<Position> randomDirections = List.from(directions)..shuffle(random);
 
     Position current = path.last;
     final Set<Position> triedPositions = {};
 
-    for (Position direction in directions) {
+    for (Position direction in randomDirections) {
       Position newPos = Position(
         current.row + direction.row,
         current.col + direction.col,
       );
 
       if (_isValidPosition(newPos) && !visitedPositions.contains(newPos) && !triedPositions.contains(newPos)) {
+        // Check if placing the letter here would violate adjacency rules
+        String letterToPlace = targetWord[currentIndex];
+        if (!_isValidLetterPlacement(newPos, letterToPlace, tempGrid)) {
+          continue;
+        }
+
         triedPositions.add(newPos);
         path.add(newPos);
         visitedPositions.add(newPos);
+        tempGrid[newPos.row][newPos.col] = letterToPlace;
 
-        if (_buildPathFromPosition(path, visitedPositions, currentIndex + 1)) {
+        if (_buildPathFromPosition(path, visitedPositions, tempGrid, currentIndex + 1)) {
           return true;
         }
 
         path.removeLast();
         visitedPositions.remove(newPos);
+        tempGrid[newPos.row][newPos.col] = '';
       }
     }
 
     return false;
+  }
+
+  bool _isValidLetterPlacement(Position pos, String letter, List<List<String>> tempGrid) {
+    for (Position direction in directions) {
+      Position adjPos = Position(
+        pos.row + direction.row,
+        pos.col + direction.col,
+      );
+
+      if (_isValidPosition(adjPos) &&
+          tempGrid[adjPos.row][adjPos.col].isNotEmpty &&
+          tempGrid[adjPos.row][adjPos.col] == letter) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   bool _isValidPosition(Position pos) {
