@@ -175,12 +175,6 @@ class WordPlacer {
 
   List<String> _getAdjacentLetters(Position pos) {
     List<String> adjacent = [];
-    final List<Position> directions = [
-      Position(-1, 0), // up
-      Position(1, 0), // down
-      Position(0, -1), // left
-      Position(0, 1), // right
-    ];
 
     for (Position direction in directions) {
       Position newPos = Position(
