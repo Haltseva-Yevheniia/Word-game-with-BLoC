@@ -32,6 +32,8 @@ void main() {
           List.generate(gridSize, (i) => List.generate(gridSize, (j) => 'A'))
       );
 
+      when(mockWordPlacer.arePositionsConnected(any)).thenReturn(true);
+
       gameBloc = GameBloc(
         wordPlacer: mockWordPlacer,
         validWord: validWord,
@@ -88,7 +90,7 @@ void main() {
       build: () => gameBloc,
       seed: () => GameState(
         letters: gameBloc.state.letters,
-        selectedPositions: [Position(0, 0)],
+        selectedPositions: const [Position(0, 0)],
         selectedPoints: const [Offset(150.0, 150.0)],
         currentWord: 'A',
         currentDragPosition: const Offset(150.0, 150.0),
