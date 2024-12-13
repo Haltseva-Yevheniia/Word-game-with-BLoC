@@ -15,7 +15,7 @@ class WordGameApp extends StatelessWidget {
       title: appTitle,
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const WordGameScreen(
-        word: 'Hello',
+        word: 'VuLeTo',
         gridSize: 4,
       ),
     );
