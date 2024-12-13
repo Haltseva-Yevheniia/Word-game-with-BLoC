@@ -8,7 +8,7 @@ correct ones!
 
 # Game demo
 
-<video src="./app_video.mp4" width="640" height="480" controls></video>
+[Download demo video](./app_video.mp4)
 
 ## Features
 
