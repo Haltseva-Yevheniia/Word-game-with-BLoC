@@ -70,7 +70,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     final List<Position> newPositions = [...state.selectedPositions, newPosition];
 
-    if (!WordPlacer(validWord, gridSize).arePositionsConnected(newPositions)) {
+    if (!wordPlacer.arePositionsConnected(newPositions)) {
       return;
     }
 
@@ -105,7 +105,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   }
 
   void _onEndDrag(EndDragEvent event, Emitter<GameState> emit) async {
-    final bool isCorrect = validWord == (state.currentWord);
+    final bool isCorrect = validWord == state.currentWord;
 
     emit(state.copyWith(
       currentDragPosition: null,

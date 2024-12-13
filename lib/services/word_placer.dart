@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:word_game_bloc/model/position.dart';
 
 const List<Position> directions = [
@@ -7,6 +8,11 @@ const List<Position> directions = [
   Position(1, 0), // down
   Position(0, -1), // left
   Position(0, 1), // right
+];
+
+const List<String> alphabet = [
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 ];
 
 class WordPlacer {
@@ -21,6 +27,7 @@ class WordPlacer {
     reset();
   }
 
+  /// Generate new grid
   List<List<String>> reset() {
     grid = List.generate(gridSize, (_) => List.generate(gridSize, (_) => ''));
     return _generateGrid();
@@ -34,6 +41,7 @@ class WordPlacer {
     return targetWord.length <= gridSize * gridSize;
   }
 
+  @visibleForTesting
   ///Place target word in a grid randomly but in a way it can be selected by user swipe
   List<Position> buildValidPath() {
     // Make a list of all possible starting positions
@@ -116,21 +124,28 @@ class WordPlacer {
     return false;
   }
 
+  /// Checks adjacency rules
+  /// We don't want to have two similar letters in neighbor positions
   bool _isValidLetterPlacement(Position pos, String letter, List<List<String>> tempGrid) {
+    List<String> allAdjacentLetters = [];
+
     for (Position direction in directions) {
       Position adjPos = Position(
         pos.row + direction.row,
         pos.col + direction.col,
       );
 
-      if (_isValidPosition(adjPos) &&
-          tempGrid[adjPos.row][adjPos.col].isNotEmpty &&
-          tempGrid[adjPos.row][adjPos.col] == letter) {
-        return false;
+      if (_isValidPosition(adjPos)) {
+        if (tempGrid[adjPos.row][adjPos.col].isNotEmpty) {
+          allAdjacentLetters.add(tempGrid[adjPos.row][adjPos.col]);
+        }
+        if (grid[adjPos.row][adjPos.col].isNotEmpty) {
+          allAdjacentLetters.add(grid[adjPos.row][adjPos.col]);
+        }
       }
     }
 
-    return true;
+    return !allAdjacentLetters.contains(letter);
   }
 
   bool _isValidPosition(Position pos) {
@@ -162,8 +177,7 @@ class WordPlacer {
   }
 
   String _getRandomLetter(Position pos) {
-    const String alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    List<String> adjacentLetters = _getAdjacentLetters(pos);
+    Set<String> adjacentLetters = _getAdjacentLetters(pos);
 
     String randomLetter;
     do {
@@ -173,8 +187,9 @@ class WordPlacer {
     return randomLetter;
   }
 
-  List<String> _getAdjacentLetters(Position pos) {
-    List<String> adjacent = [];
+  /// Get all existing neighbor letters for given position
+  Set<String> _getAdjacentLetters(Position pos) {
+    Set<String> adjacent = {};
 
     for (Position direction in directions) {
       Position newPos = Position(
