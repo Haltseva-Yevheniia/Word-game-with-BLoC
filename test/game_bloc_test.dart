@@ -1,10 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
 import 'package:word_game_bloc/model/position.dart';
+import 'package:word_game_bloc/services/audio_service.dart';
 import 'package:word_game_bloc/services/word_placer.dart';
-
-import 'mock_audio_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -137,4 +137,12 @@ void main() {
       ],
     );
   });
+}
+
+class MockAudioService extends Mock implements AudioService {
+  @override
+  Future<void> playSuccessSound() async {}
+
+  @override
+  Future<void> dispose() async {}
 }
