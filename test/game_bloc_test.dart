@@ -72,7 +72,7 @@ void main() {
       expect: () => [
         isA<GameState>()
             .having((state) => state.selectedPositions.length, 'positions length', 1)
-            .having((state) => state.selectedPositions.first, 'first position', Position(0, 0))
+            .having((state) => state.selectedPositions.first, 'first position', const Position(0, 0))
             .having((state) => state.currentWord, 'currentWord', 'A')
             .having((state) => state.currentDragPosition, 'dragPosition', const Offset(150.0, 150.0))
       ],
@@ -109,7 +109,7 @@ void main() {
       build: () => gameBloc,
       seed: () => GameState(
         letters: gameBloc.state.letters,
-        selectedPositions: [Position(0, 0)],
+        selectedPositions: const [Position(0, 0)],
         selectedPoints: const [Offset(150.0, 150.0)],
         currentWord: 'A',
         currentDragPosition: const Offset(150.0, 150.0),
@@ -123,7 +123,7 @@ void main() {
       build: () => gameBloc,
       seed: () => GameState(
         letters: gameBloc.state.letters,
-        selectedPositions: [Position(0, 0)],
+        selectedPositions: const [Position(0, 0)],
         selectedPoints: const [Offset(150.0, 150.0)],
         currentWord: 'A',
         currentDragPosition: const Offset(150.0, 150.0),
@@ -160,7 +160,7 @@ void main() {
       build: () => gameBloc,
       seed: () => GameState(
         letters: gameBloc.state.letters,
-        selectedPositions: [Position(0, 0), Position(0, 1)],
+        selectedPositions: const [Position(0, 0), Position(0, 1)],
         selectedPoints: const [Offset(150.0, 150.0), Offset(200.0, 150.0)],
         currentWord: 'AA',
       ),

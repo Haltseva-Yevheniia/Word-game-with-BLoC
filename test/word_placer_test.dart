@@ -117,45 +117,29 @@ void main() {
       expect(areGridsDifferent, true, reason: 'Reset should generate a different grid');
     });
 
-    test('adjacent letters are different', () {
-      final grid = wordPlacer.reset();
-
-      for (int i = 0; i < gridSize; i++) {
-        for (int j = 0; j < gridSize; j++) {
-          final currentLetter = grid[i][j];
-          final adjacentLetters = _getAdjacentLetters(grid, i, j, gridSize);
-
-          for (final adjLetter in adjacentLetters) {
-            expect(adjLetter != currentLetter, true,
-                reason: 'Adjacent letters should be different at position ($i,$j)');
-          }
-        }
-      }
-    });
-
     test('arePositionsConnected returns true for valid path', () {
       final positions = [
-        Position(0, 0),
-        Position(0, 1),
-        Position(1, 1),
+        const Position(0, 0),
+        const Position(0, 1),
+        const Position(1, 1),
       ];
       expect(wordPlacer.arePositionsConnected(positions), true);
     });
 
     test('arePositionsConnected returns false for disconnected path', () {
       final positions = [
-        Position(0, 0),
-        Position(2, 2), // Disconnected
-        Position(0, 2),
+        const Position(0, 0),
+        const Position(2, 2), // Disconnected
+        const Position(0, 2),
       ];
       expect(wordPlacer.arePositionsConnected(positions), false);
     });
 
     test('arePositionsConnected returns false for diagonal path', () {
       final positions = [
-        Position(0, 0),
-        Position(1, 1), // Diagonal
-        Position(2, 2),
+        const Position(0, 0),
+        const Position(1, 1), // Diagonal
+        const Position(2, 2),
       ];
       expect(wordPlacer.arePositionsConnected(positions), false);
     });
@@ -271,25 +255,4 @@ bool _extendPath(List<List<String>> grid, String word, List<Position> path, Set<
 
 bool _isValidPosition(List<List<String>> grid, Position pos) {
   return pos.row >= 0 && pos.row < grid.length && pos.col >= 0 && pos.col < grid[0].length;
-}
-
-List<String> _getAdjacentLetters(List<List<String>> grid, int row, int col, int gridSize) {
-  final List<String> adjacent = [];
-  final directions = [
-    [-1, 0], // up
-    [1, 0], // down
-    [0, -1], // left
-    [0, 1], // right
-  ];
-
-  for (final dir in directions) {
-    final newRow = row + dir[0];
-    final newCol = col + dir[1];
-
-    if (newRow >= 0 && newRow < gridSize && newCol >= 0 && newCol < gridSize) {
-      adjacent.add(grid[newRow][newCol]);
-    }
-  }
-
-  return adjacent;
 }

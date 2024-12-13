@@ -6,6 +6,10 @@ A Flutter word search game where players create words by swiping through letters
 vibrations of the devise and shaking letters for incorrect words and celebratory sounds with encourage message for
 correct ones!
 
+# Game demo
+
+<video src="./app_video.mp4" width="640" height="480" controls></video>
+
 ## Features
 
 - Interactive letter grid for word formation
