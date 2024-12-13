@@ -58,17 +58,10 @@ class WordPlacer {
       List<Position> path = [];
       Set<Position> visitedPositions = {};
 
-      // Create a temporary grid for testing letter placement
-      List<List<String>> tempGrid = List.generate(
-        gridSize,
-        (_) => List.generate(gridSize, (_) => ''),
-      );
-
       path.add(startPos);
       visitedPositions.add(startPos);
-      tempGrid[startPos.row][startPos.col] = targetWord[0];
 
-      if (_buildPathFromPosition(path, visitedPositions, tempGrid, 1)) {
+      if (_buildPathFromPosition(path, visitedPositions, 1)) {
         return path;
       }
     }
@@ -81,7 +74,6 @@ class WordPlacer {
   bool _buildPathFromPosition(
     List<Position> path,
     Set<Position> visitedPositions,
-    List<List<String>> tempGrid,
     int currentIndex,
   ) {
     if (currentIndex >= targetWord.length) {
@@ -100,52 +92,21 @@ class WordPlacer {
       );
 
       if (_isValidPosition(newPos) && !visitedPositions.contains(newPos) && !triedPositions.contains(newPos)) {
-        // Check if placing the letter here would violate adjacency rules
-        String letterToPlace = targetWord[currentIndex];
-        if (!_isValidLetterPlacement(newPos, letterToPlace, tempGrid)) {
-          continue;
-        }
 
         triedPositions.add(newPos);
         path.add(newPos);
         visitedPositions.add(newPos);
-        tempGrid[newPos.row][newPos.col] = letterToPlace;
 
-        if (_buildPathFromPosition(path, visitedPositions, tempGrid, currentIndex + 1)) {
+        if (_buildPathFromPosition(path, visitedPositions, currentIndex + 1)) {
           return true;
         }
 
         path.removeLast();
         visitedPositions.remove(newPos);
-        tempGrid[newPos.row][newPos.col] = '';
       }
     }
 
     return false;
-  }
-
-  /// Checks adjacency rules
-  /// We don't want to have two similar letters in neighbor positions
-  bool _isValidLetterPlacement(Position pos, String letter, List<List<String>> tempGrid) {
-    List<String> allAdjacentLetters = [];
-
-    for (Position direction in directions) {
-      Position adjPos = Position(
-        pos.row + direction.row,
-        pos.col + direction.col,
-      );
-
-      if (_isValidPosition(adjPos)) {
-        if (tempGrid[adjPos.row][adjPos.col].isNotEmpty) {
-          allAdjacentLetters.add(tempGrid[adjPos.row][adjPos.col]);
-        }
-        if (grid[adjPos.row][adjPos.col].isNotEmpty) {
-          allAdjacentLetters.add(grid[adjPos.row][adjPos.col]);
-        }
-      }
-    }
-
-    return !allAdjacentLetters.contains(letter);
   }
 
   bool _isValidPosition(Position pos) {

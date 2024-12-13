@@ -185,7 +185,48 @@ void main() {
       }
       expect(foundDifference, true, reason: 'At least some generated grids should be different');
     });
+
+    test('can successfully place word "Hello"', () {
+      final helloWordPlacer = WordPlacer('Hello', gridSize);
+      final grid = helloWordPlacer.reset();
+      const upperWord = 'HELLO';
+
+      List<Position>? wordPath;
+
+      // Try each possible starting position and consider both forward and reverse word
+      for (int i = 0; i < gridSize && wordPath == null; i++) {
+        for (int j = 0; j < gridSize && wordPath == null; j++) {
+          // Try forward word
+          if (grid[i][j] == upperWord[0]) {
+            wordPath = _findWordPath(grid, upperWord, Position(i, j));
+          }
+          // Try reverse word
+          if (wordPath == null && grid[i][j] == upperWord[upperWord.length - 1]) {
+            wordPath = _findWordPath(grid, String.fromCharCodes(upperWord.codeUnits.reversed), Position(i, j));
+          }
+        }
+      }
+
+      expect(wordPath, isNotNull, reason: 'Word $upperWord should be found in the grid');
+      expect(wordPath!.length, upperWord.length);
+      expect(helloWordPlacer.arePositionsConnected(wordPath), true);
+
+      // Verify the letters along the path form our word (in either direction)
+      final foundWord = wordPath.map((pos) => grid[pos.row][pos.col]).join();
+      expect(foundWord == upperWord || foundWord == String.fromCharCodes(upperWord.codeUnits.reversed), true,
+          reason: 'Found word $foundWord should match target word $upperWord in either direction');
+
+      expect(wordPath.length, 5, reason: 'Hello should have exactly 5 positions');
+
+      final letters = wordPath.map((pos) => grid[pos.row][pos.col]).toSet();
+      expect(letters.containsAll(['H', 'E', 'L', 'O']), true,
+          reason: 'All letters of HELLO should be present');
+
+      final lCount = wordPath.where((pos) => grid[pos.row][pos.col] == 'L').length;
+      expect(lCount, 2, reason: 'Should contain exactly two L\'s');
+    });
   });
+
 }
 
 List<Position>? _findWordPath(List<List<String>> grid, String word, Position start) {
@@ -202,13 +243,6 @@ List<Position>? _findWordPath(List<List<String>> grid, String word, Position sta
 
 bool _extendPath(List<List<String>> grid, String word, List<Position> path, Set<Position> visited, int wordIndex) {
   if (wordIndex >= word.length) return true;
-
-  final directions = [
-    Position(-1, 0), // up
-    Position(1, 0), // down
-    Position(0, -1), // left
-    Position(0, 1), // right
-  ];
 
   final current = path.last;
   for (final dir in directions) {
