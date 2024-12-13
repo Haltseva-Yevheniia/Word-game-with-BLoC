@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:word_game_bloc/model/position.dart';
-import 'package:word_game_bloc/services/word_placer.dart';
 import 'package:word_game_bloc/services/audio_service.dart';
+import 'package:word_game_bloc/services/word_placer.dart';
 
 part 'game_event.dart';
 part 'game_state.dart';
@@ -12,15 +12,18 @@ part 'game_state.dart';
 class GameBloc extends Bloc<GameEvent, GameState> {
   final int gridSize;
   final String validWord;
+  final WordPlacer wordPlacer;
   final AudioService _audioService;
 
   GameBloc({
-    required this.validWord,
+    required String validWord,
     required this.gridSize,
+    required this.wordPlacer,
     AudioService? audioService,
-  })  : _audioService = audioService ?? AudioService(),
+  })  : validWord = validWord.toUpperCase(),
+        _audioService = audioService ?? AudioService(),
         super(GameState(
-          letters: WordPlacer(validWord.toUpperCase(), gridSize).generateGrid(),
+          letters: wordPlacer.getGrid(),
           selectedPositions: const [],
           selectedPoints: const [],
           currentWord: '',
@@ -129,8 +132,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   }
 
   void _onResetGame(ResetGameEvent event, Emitter<GameState> emit) {
-    final wordPlacement = WordPlacer(validWord.toUpperCase(), gridSize);
-    final newGrid = wordPlacement.generateGrid();
+    final newGrid = wordPlacer.reset();
     emit(state.copyWith(
       letters: newGrid,
       selectedPositions: [],

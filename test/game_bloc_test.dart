@@ -1,21 +1,41 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
 import 'package:word_game_bloc/model/position.dart';
 import 'package:word_game_bloc/services/audio_service.dart';
 import 'package:word_game_bloc/services/word_placer.dart';
 
+@GenerateMocks([WordPlacer, AudioService])
+import 'game_bloc_test.mocks.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
   group('GameBloc', () {
     late GameBloc gameBloc;
+    late MockWordPlacer mockWordPlacer;
+    late MockAudioService mockAudioService;
+    const validWord = 'VUELTO';
+    const gridSize = 4;
 
     setUp(() {
-      final mockAudioService = MockAudioService();
+      mockAudioService = MockAudioService();
+      mockWordPlacer = MockWordPlacer();
+
+      // Setup mock word placer behavior
+      when(mockWordPlacer.getGrid()).thenReturn(
+          List.generate(gridSize, (i) => List.generate(gridSize, (j) => 'A'))
+      );
+      when(mockWordPlacer.reset()).thenReturn(
+          List.generate(gridSize, (i) => List.generate(gridSize, (j) => 'A'))
+      );
+
       gameBloc = GameBloc(
-        validWord: 'VUELTO',
-        gridSize: 4,
+        wordPlacer: mockWordPlacer,
+        validWord: validWord,
+        gridSize: gridSize,
         audioService: mockAudioService,
       );
     });
@@ -26,6 +46,7 @@ void main() {
       expect(gameBloc.state.selectedPoints, isEmpty);
       expect(gameBloc.state.currentDragPosition, isNull);
       expect(gameBloc.state.isCorrectWord, isFalse);
+      expect(gameBloc.state.isShaking, isFalse);
     });
 
     blocTest<GameBloc, GameState>(
@@ -37,6 +58,8 @@ void main() {
             .having((state) => state.selectedPositions, 'selectedPositions', isEmpty)
             .having((state) => state.currentWord, 'currentWord', '')
             .having((state) => state.isCorrectWord, 'isCorrectWord', false)
+            .having((state) => state.isShaking, 'isShaking', false)
+            .having((state) => state.currentDragPosition, 'currentDragPosition', isNull)
       ],
     );
 
@@ -44,105 +67,137 @@ void main() {
       'emits new state on StartDragEvent',
       build: () => gameBloc,
       act: (bloc) => bloc.add(StartDragEvent(0, 0, 150.0, 150.0)),
-      expect: () {
-        final letter = gameBloc.state.letters[0][0];
-        return [
-          isA<GameState>()
-              .having((state) => state.selectedPositions.length, 'positions length', 1)
-              .having((state) => state.selectedPositions.first, 'first position', Position(0, 0))
-              .having((state) => state.currentWord, 'currentWord', letter)
-              .having((state) => state.currentDragPosition, 'dragPosition', const Offset(150.0, 150.0))
-        ];
-      },
+      expect: () => [
+        isA<GameState>()
+            .having((state) => state.selectedPositions.length, 'positions length', 1)
+            .having((state) => state.selectedPositions.first, 'first position', Position(0, 0))
+            .having((state) => state.currentWord, 'currentWord', 'A')
+            .having((state) => state.currentDragPosition, 'dragPosition', const Offset(150.0, 150.0))
+      ],
     );
 
     blocTest<GameBloc, GameState>(
-      'emits new state on UpdateDragEvent with new position',
+      'ignores StartDragEvent with invalid position',
+      build: () => gameBloc,
+      act: (bloc) => bloc.add(StartDragEvent(-1, -1, 150.0, 150.0)),
+      expect: () => [],
+    );
+
+    blocTest<GameBloc, GameState>(
+      'emits new state on UpdateDragEvent with new valid position',
       build: () => gameBloc,
       seed: () => GameState(
         letters: gameBloc.state.letters,
         selectedPositions: [Position(0, 0)],
         selectedPoints: const [Offset(150.0, 150.0)],
-        currentWord: gameBloc.state.letters[0][0],
+        currentWord: 'A',
         currentDragPosition: const Offset(150.0, 150.0),
       ),
       act: (bloc) => bloc.add(UpdateDragEvent(0, 1, 200.0, 150.0)),
-      expect: () {
-        final word = '${gameBloc.state.letters[0][0]}${gameBloc.state.letters[0][1]}';
-        return [
-          isA<GameState>()
-              .having((state) => state.selectedPositions.length, 'positions length', 2)
-              .having((state) => state.currentWord, 'currentWord', word)
-        ];
-      },
+      expect: () => [
+        isA<GameState>()
+            .having((state) => state.selectedPositions.length, 'positions length', 2)
+            .having((state) => state.currentWord, 'currentWord', 'AA')
+            .having((state) => state.currentDragPosition, 'dragPosition', const Offset(200.0, 150.0))
+      ],
     );
 
     blocTest<GameBloc, GameState>(
-      'emits correct state on EndDragEvent with valid word',
+      'ignores UpdateDragEvent with diagonal move',
       build: () => gameBloc,
-      seed: () {
-        final wordPlacement = WordPlacer('VUELTO', 4);
-        final positions = wordPlacement.findValidPath();
-        return GameState(
-          letters: wordPlacement.generateGrid(),
-          selectedPositions: positions,
-          selectedPoints: positions.map((pos) => Offset(pos.col.toDouble() * 50, pos.row.toDouble() * 50)).toList(),
-          currentWord: 'VUELTO',
-        );
+      seed: () => GameState(
+        letters: gameBloc.state.letters,
+        selectedPositions: [Position(0, 0)],
+        selectedPoints: const [Offset(150.0, 150.0)],
+        currentWord: 'A',
+        currentDragPosition: const Offset(150.0, 150.0),
+      ),
+      act: (bloc) => bloc.add(UpdateDragEvent(1, 1, 200.0, 200.0)),
+      expect: () => [],
+    );
+
+    blocTest<GameBloc, GameState>(
+      'ignores UpdateDragEvent with too far move',
+      build: () => gameBloc,
+      seed: () => GameState(
+        letters: gameBloc.state.letters,
+        selectedPositions: [Position(0, 0)],
+        selectedPoints: const [Offset(150.0, 150.0)],
+        currentWord: 'A',
+        currentDragPosition: const Offset(150.0, 150.0),
+      ),
+      act: (bloc) => bloc.add(UpdateDragEvent(0, 2, 250.0, 150.0)),
+      expect: () => [],
+    );
+
+    blocTest<GameBloc, GameState>(
+      'emits correct states sequence on EndDragEvent with correct word',
+      build: () {
+        when(mockAudioService.playSuccessSound()).thenAnswer((_) async {});
+        return gameBloc;
       },
+      seed: () => GameState(
+        letters: gameBloc.state.letters,
+        selectedPositions: List.generate(validWord.length, (i) => Position(0, i)),
+        selectedPoints: List.generate(validWord.length, (i) => Offset(i * 50.0, 150.0)),
+        currentWord: validWord,
+      ),
       act: (bloc) => bloc.add(EndDragEvent()),
       expect: () => [
         isA<GameState>()
             .having((state) => state.isCorrectWord, 'isCorrectWord', true)
             .having((state) => state.currentDragPosition, 'dragPosition', isNull)
       ],
+      verify: (_) {
+        verify(mockAudioService.playSuccessSound()).called(1);
+      },
     );
 
     blocTest<GameBloc, GameState>(
-      'emits reset state on EndDragEvent with invalid word',
+      'emits correct states sequence on EndDragEvent with incorrect word',
       build: () => gameBloc,
       seed: () => GameState(
         letters: gameBloc.state.letters,
         selectedPositions: [Position(0, 0), Position(0, 1)],
         selectedPoints: const [Offset(150.0, 150.0), Offset(200.0, 150.0)],
-        currentWord: 'XX',
+        currentWord: 'AA',
       ),
       act: (bloc) => bloc.add(EndDragEvent()),
       expect: () => [
         isA<GameState>()
             .having((state) => state.isCorrectWord, 'isCorrectWord', false)
-            .having((state) => state.currentDragPosition, 'dragPosition', isNull),
-      ],
-    );
-
-    blocTest<GameBloc, GameState>(
-      'emits reset state on ResetGameEvent',
-      build: () => gameBloc,
-      seed: () {
-        final wordPlacement = WordPlacer('VUELTO', 4);
-        return GameState(
-          letters: wordPlacement.generateGrid(),
-          selectedPositions: [Position(0, 0)],
-          selectedPoints: const [Offset(150.0, 150.0)],
-          currentWord: 'A',
-          isCorrectWord: true,
-        );
-      },
-      act: (bloc) => bloc.add(ResetGameEvent()),
-      expect: () => [
+            .having((state) => state.currentDragPosition, 'dragPosition', isNull)
+            .having((state) => state.isShaking, 'isShaking', true),
+        isA<GameState>()
+            .having((state) => state.isShaking, 'isShaking', false),
         isA<GameState>()
             .having((state) => state.selectedPositions, 'selectedPositions', isEmpty)
             .having((state) => state.currentWord, 'currentWord', '')
             .having((state) => state.isCorrectWord, 'isCorrectWord', false)
       ],
+      wait: const Duration(milliseconds: 600),
     );
+
+    blocTest<GameBloc, GameState>(
+      'emits new grid on ResetGameEvent',
+      build: () => gameBloc,
+      act: (bloc) => bloc.add(ResetGameEvent()),
+      expect: () => [
+        isA<GameState>()
+            .having((state) => state.letters, 'letters', isNotEmpty)
+            .having((state) => state.selectedPositions, 'selectedPositions', isEmpty)
+            .having((state) => state.currentWord, 'currentWord', '')
+            .having((state) => state.isCorrectWord, 'isCorrectWord', false)
+            .having((state) => state.isShaking, 'isShaking', false)
+      ],
+      verify: (_) {
+        verify(mockWordPlacer.reset()).called(1);
+      },
+    );
+
+    test('disposes audio service on close', () async {
+      await gameBloc.close();
+      verify(mockAudioService.dispose()).called(1);
+    });
   });
-}
-
-class MockAudioService extends Mock implements AudioService {
-  @override
-  Future<void> playSuccessSound() async {}
-
-  @override
-  Future<void> dispose() async {}
 }

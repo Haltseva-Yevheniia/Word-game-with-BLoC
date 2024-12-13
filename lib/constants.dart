@@ -7,8 +7,3 @@ const double boxSize = 300.0;
 const String appTitle = 'Word Game';
 const String youAreRight = 'You are right!';
 const String reset = 'Reset';
-
-///Constants for word_placer
-//amounts
-
-const int maxAllowedAttemptsToFindValidPath = 1000;

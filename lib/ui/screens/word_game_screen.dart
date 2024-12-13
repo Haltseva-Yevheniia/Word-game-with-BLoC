@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:word_game_bloc/blocs/game_bloc.dart';
 import 'package:word_game_bloc/constants.dart';
 import 'package:word_game_bloc/model/position.dart';
+import 'package:word_game_bloc/services/word_placer.dart';
 import 'package:word_game_bloc/ui/components/line_painter.dart';
 import 'package:word_game_bloc/ui/widgets/letter_cell.dart';
 
@@ -25,6 +26,7 @@ class WordGameScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => GameBloc(
         validWord: word,
+        wordPlacer: WordPlacer(word.toUpperCase(), gridSize),
         gridSize: gridSize,
       )..add(InitializeGameEvent()),
       child: _WordGameView(gridSize: gridSize),

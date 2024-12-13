@@ -1,39 +1,52 @@
 import 'dart:math';
 
-import 'package:word_game_bloc/constants.dart';
 import 'package:word_game_bloc/model/position.dart';
 
 class WordPlacer {
-  final String word;
+  final String targetWord;
   final int gridSize;
-  late List<List<String>> grid;
+  List<List<String>> grid;
   final random = Random();
 
-  WordPlacer(this.word, this.gridSize) {
-    grid = List.generate(
-      gridSize,
-      (_) => List.generate(gridSize, (_) => ''),
-    );
+  WordPlacer(String word, this.gridSize)
+      : targetWord = word.toUpperCase(),
+        grid = [] {
+    reset();
+  }
+
+  List<List<String>> reset() {
+    grid = List.generate(gridSize, (_) => List.generate(gridSize, (_) => ''));
+    return _generateGrid();
+  }
+
+  List<List<String>> getGrid() {
+    return grid;
   }
 
   bool isValidPlacement() {
-    return word.length <= gridSize * gridSize;
+    return targetWord.length <= gridSize * gridSize;
   }
 
-  List<Position> findValidPath() {
-    for (int attempt = 0; attempt < maxAllowedAttemptsToFindValidPath; attempt++) {
-      int startRow = random.nextInt(gridSize);
-      int startCol = random.nextInt(gridSize);
+  ///Place target word in a grid randomly but in a way it can be selected by user swipe
+  List<Position> buildValidPath() {
+    // Make a list of all possible starting positions
+    List<Position> allStartPositions = [];
+    for (int row = 0; row < gridSize; row++) {
+      for (int col = 0; col < gridSize; col++) {
+        allStartPositions.add(Position(row, col));
+      }
+    }
 
+    allStartPositions.shuffle(random);
+
+    for (Position startPos in allStartPositions) {
       List<Position> path = [];
       Set<Position> visitedPositions = {};
 
-      Position startPos = Position(startRow, startCol);
       path.add(startPos);
       visitedPositions.add(startPos);
 
-      bool success = _buildPath(path, visitedPositions, 1);
-      if (success) {
+      if (_buildPathFromPosition(path, visitedPositions, 1)) {
         return path;
       }
     }
@@ -41,8 +54,8 @@ class WordPlacer {
     throw Exception('Could not find valid path for word placement');
   }
 
-  bool _buildPath(List<Position> path, Set<Position> visitedPositions, int currentIndex) {
-    if (currentIndex >= word.length) {
+  bool _buildPathFromPosition(List<Position> path, Set<Position> visitedPositions, int currentIndex) {
+    if (currentIndex >= targetWord.length) {
       return true;
     }
 
@@ -56,6 +69,7 @@ class WordPlacer {
     directions.shuffle(random);
 
     Position current = path.last;
+    final Set<Position> triedPositions = {};
 
     for (Position direction in directions) {
       Position newPos = Position(
@@ -63,11 +77,12 @@ class WordPlacer {
         current.col + direction.col,
       );
 
-      if (_isValidPosition(newPos) && !visitedPositions.contains(newPos)) {
+      if (_isValidPosition(newPos) && !visitedPositions.contains(newPos) && !triedPositions.contains(newPos)) {
+        triedPositions.add(newPos);
         path.add(newPos);
         visitedPositions.add(newPos);
 
-        if (_buildPath(path, visitedPositions, currentIndex + 1)) {
+        if (_buildPathFromPosition(path, visitedPositions, currentIndex + 1)) {
           return true;
         }
 
@@ -83,16 +98,16 @@ class WordPlacer {
     return pos.row >= 0 && pos.row < gridSize && pos.col >= 0 && pos.col < gridSize;
   }
 
-  List<List<String>> generateGrid() {
+  List<List<String>> _generateGrid() {
     if (!isValidPlacement()) {
       throw Exception('Word is too long for the given grid size');
     }
 
-    List<Position> path = findValidPath();
+    List<Position> path = buildValidPath();
 
-    for (int i = 0; i < word.length; i++) {
+    for (int i = 0; i < targetWord.length; i++) {
       Position pos = path[i];
-      grid[pos.row][pos.col] = word[i];
+      grid[pos.row][pos.col] = targetWord[i];
     }
 
     for (int i = 0; i < gridSize; i++) {
