@@ -37,6 +37,7 @@ class WordPlacer {
     return grid;
   }
 
+  @visibleForTesting
   bool isValidPlacement() {
     return targetWord.length <= gridSize * gridSize;
   }
@@ -113,6 +114,9 @@ class WordPlacer {
     return pos.row >= 0 && pos.row < gridSize && pos.col >= 0 && pos.col < gridSize;
   }
 
+  /// Entry point for grid generation
+  /// This generates grid of random letters and place target word there
+  /// in a way that target word is selectable by user
   List<List<String>> _generateGrid() {
     if (!isValidPlacement()) {
       throw Exception('Word is too long for the given grid size');
